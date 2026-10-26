@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Printer Spooler System - SPOS Mini Project demonstrating OS synchronization, mutual exclusion, and shared resource management">
+    <title>Printer Spooler System | SPOS Mini Project</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9V2h12v7"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <h1>Printer Spooler</h1>
+                <span>SPOS Mini Project</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="submit" id="nav-submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+                <span>Submit Job</span>
+            </a>
+            <a href="#" class="nav-item" data-page="queue" id="nav-queue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                <span>Print Queue</span>
+            </a>
+            <a href="#" class="nav-item" data-page="printer" id="nav-printer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <span>Printer</span>
+            </a>
+            <a href="#" class="nav-item" data-page="simulation" id="nav-simulation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                <span>Simulation</span>
+            </a>
+            <a href="#" class="nav-item" data-page="synchronization" id="nav-synchronization">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Sync Monitor</span>
+            </a>
+            <a href="#" class="nav-item" data-page="statistics" id="nav-statistics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Statistics</span>
+            </a>
+            <a href="#" class="nav-item" data-page="logs" id="nav-logs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>Activity Log</span>
+            </a>
+            <a href="#" class="nav-item" data-page="about" id="nav-about">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>About</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-danger btn-sm" id="btn-reset-system" title="Reset entire system">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Reset System
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <button class="menu-toggle" id="menu-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="header-title">
+                <h2 id="page-title">Dashboard</h2>
+                <span class="header-subtitle" id="page-subtitle">System Overview</span>
+            </div>
+            <div class="header-actions">
+                <div class="speed-control">
+                    <label for="speed-select">Speed:</label>
+                    <select id="speed-select" class="select-sm">
+                        <option value="fast">Fast</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="slow">Slow</option>
+                    </select>
+                </div>
+                <div class="server-status" id="server-status">
+                    <span class="status-dot"></span>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page: Dashboard -->
+        <section class="page active" id="page-dashboard">
+            <div class="dashboard-grid">
+                <div class="stat-card primary" id="card-printer-status">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Printer Status</span>
+                        <span class="stat-value" id="dash-printer-status">--</span>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Current Job</span>
+                        <span class="stat-value" id="dash-current-job">None</span>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Queue Length</span>
+                        <span class="stat-value" id="dash-queue-length">0</span>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Jobs</span>
+                        <span class="stat-value" id="dash-total-jobs">0</span>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value" id="dash-completed">0</span>
+                    </div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Cancelled</span>
+                        <span class="stat-value" id="dash-cancelled">0</span>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Pages Printed</span>
+                        <span class="stat-value" id="dash-pages">0</span>
+                    </div>
+                </div>
+                <div class="stat-card primary">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Avg Wait Time</span>
+                        <span class="stat-value" id="dash-avg-wait">0s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard current job progress -->
+            <div class="card" id="dash-progress-card" style="display:none;">
+                <div class="card-header">
+                    <h3>Currently Printing</h3>
+                    <span class="badge badge-printing" id="dash-progress-jobid">--</span>
+                </div>
+                <div class="card-body">
+                    <div class="progress-info">
+                        <span id="dash-progress-doc">--</span>
+                        <span id="dash-progress-text">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="dash-progress-bar" style="width:0%"></div>
+                    </div>
+                    <div class="progress-details">
+                        <span>Pages: <strong id="dash-progress-pages">0/0</strong></span>
+                        <span>User: <strong id="dash-progress-user">--</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Jobs Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Jobs</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="dash-recent-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>User</th>
+                                    <th>Document</th>
+                                    <th>Pages</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-recent-tbody">
+                                <tr><td colspan="5" class="empty-state">No jobs yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Submit Job -->
+        <section class="page" id="page-submit">
+            <div class="card form-card">
+                <div class="card-header">
+                    <h3>Submit New Print Job</h3>
+                </div>
+                <div class="card-body">
+                    <form id="submit-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-userid">User ID <span class="required">*</span></label>
+                                <input type="text" id="input-userid" placeholder="e.g., U001" required maxlength="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-username">User Name <span class="required">*</span></label>
+                                <input type="text" id="input-username" placeholder="e.g., Aagam" required maxlength="50">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-docname">Document Name <span class="required">*</span></label>
+                                <input type="text" id="input-docname" placeholder="e.g., OS Report.pdf" required maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-pages">Number of Pages <span class="required">*</span></label>
+                                <input type="number" id="input-pages" placeholder="e.g., 10" required min="1" max="1000">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="btn-submit-job">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+                                Submit Print Job
+                            </button>
+                            <button type="button" class="btn btn-ghost" id="btn-clear-form">Clear</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Submit Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Submit (Sample Data)</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Click to auto-fill the form with sample data:</p>
+                    <div class="quick-submit-grid">
+                        <button class="btn btn-outline" onclick="App.quickFill('U001','Aagam','Operating Systems Report.pdf',10)">Aagam - OS Report</button>
+                        <button class="btn btn-outline" onclick="App.quickFill('U002','Yash','SPOS Assignment.docx',5)">Yash - SPOS Assignment</button>
+                        <button class="btn btn-outline" onclick="App.quickFill('U003','Mudra','CN Lab Report.pdf',8)">Mudra - CN Lab Report</button>
+                        <button class="btn btn-outline" onclick="App.quickFill('U004','Arjun','DBMS Notes.pdf',15)">Arjun - DBMS Notes</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Print Queue -->
+        <section class="page" id="page-queue">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Print Queue</h3>
+                    <span class="badge badge-info" id="queue-count">0 jobs</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="queue-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Job ID</th>
+                                    <th>User</th>
+                                    <th>Document</th>
+                                    <th>Pages</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="queue-tbody">
+                                <tr><td colspan="8" class="empty-state">Queue is empty</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Jobs History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>All Jobs History</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>User</th>
+                                    <th>Document</th>
+                                    <th>Pages</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Wait Time</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-jobs-tbody">
+                                <tr><td colspan="8" class="empty-state">No jobs submitted yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Printer -->
+        <section class="page" id="page-printer">
+            <div class="printer-panel">
+                <div class="card printer-card">
+                    <div class="card-header">
+                        <h3>SPOS Virtual Printer</h3>
+                        <div class="printer-controls">
+                            <button class="btn btn-sm btn-warning" id="btn-pause-printer" title="Pause Printer">Pause</button>
+                            <button class="btn btn-sm btn-success" id="btn-resume-printer" title="Resume Printer">Resume</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="printer-visual">
+                            <div class="printer-svg-container" id="printer-visual-status">
+                                <svg viewBox="0 0 120 100" class="printer-svg">
+                                    <rect x="25" y="5" width="70" height="30" rx="3" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+                                    <rect x="15" y="30" width="90" height="40" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+                                    <circle cx="90" cy="40" r="3" id="printer-light" fill="#94a3b8"/>
+                                    <rect x="25" y="65" width="70" height="25" rx="3" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+                                    <rect x="35" y="10" width="50" height="5" rx="1" fill="#cbd5e1" id="printer-paper"/>
+                                </svg>
+                            </div>
+                            <div class="printer-status-info">
+                                <div class="info-row">
+                                    <span class="info-label">Printer ID:</span>
+                                    <span class="info-value">PRN-001</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Name:</span>
+                                    <span class="info-value">SPOS Virtual Printer</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Status:</span>
+                                    <span class="info-value badge" id="printer-status-badge">--</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Total Printed:</span>
+                                    <span class="info-value" id="printer-total-printed">0 jobs</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Total Pages:</span>
+                                    <span class="info-value" id="printer-total-pages">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="printer-current-card">
+                    <div class="card-header">
+                        <h3>Current Print Job</h3>
+                    </div>
+                    <div class="card-body" id="printer-current-body">
+                        <div class="empty-state">No job currently printing</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Simulation -->
+        <section class="page" id="page-simulation">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Concurrent User Simulation</h3>
+                    <span class="badge badge-info">OS Concept Demo</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Simulate multiple users submitting print jobs concurrently. This demonstrates thread synchronization, mutual exclusion, and the producer-consumer pattern in action.</p>
+                    <div class="simulation-config">
+                        <div class="form-group">
+                            <label for="sim-users">Number of Users (Threads)</label>
+                            <input type="number" id="sim-users" value="5" min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="sim-jobs">Jobs per User</label>
+                            <input type="number" id="sim-jobs" value="2" min="1" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Total Jobs</label>
+                            <div class="sim-total" id="sim-total">10</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg" id="btn-start-simulation">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Start Concurrent Simulation
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Simulation Concept Explanation</h3>
+                </div>
+                <div class="card-body">
+                    <div class="concept-grid">
+                        <div class="concept-item">
+                            <h4>Producer Threads</h4>
+                            <p>Each simulated user runs as a separate Java thread (producer) that submits print jobs concurrently to the shared spooler.</p>
+                        </div>
+                        <div class="concept-item">
+                            <h4>Consumer Thread</h4>
+                            <p>The printer worker is the consumer thread that processes jobs from the queue one at a time, ensuring mutual exclusion.</p>
+                        </div>
+                        <div class="concept-item">
+                            <h4>Shared Queue</h4>
+                            <p>The print queue is a shared data structure protected by a ReentrantLock. All access requires lock acquisition first.</p>
+                        </div>
+                        <div class="concept-item">
+                            <h4>Condition Variable</h4>
+                            <p>When the queue is empty, the consumer calls await(). When a producer adds a job, it calls signal() to wake the consumer.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Synchronization Monitor -->
+        <section class="page" id="page-synchronization">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Synchronization Monitor</h3>
+                    <span class="badge badge-warning">Live</span>
+                </div>
+                <div class="card-body">
+                    <div class="sync-grid">
+                        <div class="sync-card">
+                            <div class="sync-label">Active Threads</div>
+                            <div class="sync-value" id="sync-active-threads">0</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Queue Lock</div>
+                            <div class="sync-value" id="sync-queue-lock">Unlocked</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Printer Lock</div>
+                            <div class="sync-value" id="sync-printer-lock">Unlocked</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Critical Section</div>
+                            <div class="sync-value" id="sync-critical-section">Idle</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Jobs Submitted Concurrently</div>
+                            <div class="sync-value" id="sync-concurrent-submissions">0</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Jobs Processed Safely</div>
+                            <div class="sync-value" id="sync-jobs-safe">0</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Queue Wait Count</div>
+                            <div class="sync-value" id="sync-queue-wait">0</div>
+                        </div>
+                        <div class="sync-card">
+                            <div class="sync-label">Printer Wait Count</div>
+                            <div class="sync-value" id="sync-printer-wait">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Synchronization Flow</h3>
+                </div>
+                <div class="card-body">
+                    <div class="sync-flow">
+                        <div class="flow-step">
+                            <div class="flow-icon flow-producer">P</div>
+                            <div class="flow-text">
+                                <strong>Producer (User Thread)</strong>
+                                <span>Submits job, acquires queue lock, adds to queue, signals consumer</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">
+                            <div class="flow-icon flow-queue">Q</div>
+                            <div class="flow-text">
+                                <strong>Shared Queue (Protected by Lock)</strong>
+                                <span>FIFO queue - ReentrantLock ensures thread-safe access</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">
+                            <div class="flow-icon flow-consumer">C</div>
+                            <div class="flow-text">
+                                <strong>Consumer (Printer Worker)</strong>
+                                <span>Waits on Condition, acquires lock, removes job, prints</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow">&#8595;</div>
+                        <div class="flow-step">
+                            <div class="flow-icon flow-resource">R</div>
+                            <div class="flow-text">
+                                <strong>Shared Printer (Critical Section)</strong>
+                                <span>Only one job at a time - mutual exclusion enforced</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Statistics -->
+        <section class="page" id="page-statistics">
+            <div class="stats-grid">
+                <div class="stat-chart-card">
+                    <h4>Jobs Overview</h4>
+                    <div class="chart-container" id="chart-jobs">
+                        <div class="bar-chart" id="bar-chart-jobs"></div>
+                    </div>
+                </div>
+                <div class="stat-chart-card">
+                    <h4>Printer Utilization</h4>
+                    <div class="chart-container">
+                        <div class="donut-chart" id="donut-utilization">
+                            <svg viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="12"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#6366f1" stroke-width="12" stroke-dasharray="314" stroke-dashoffset="314" id="donut-circle" transform="rotate(-90 60 60)"/>
+                                <text x="60" y="60" text-anchor="middle" dominant-baseline="central" class="donut-text" id="donut-text">0%</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-chart-card">
+                    <h4>Time Statistics</h4>
+                    <div class="chart-container">
+                        <div class="time-stats">
+                            <div class="time-stat">
+                                <span class="time-label">Avg Wait Time</span>
+                                <span class="time-value" id="stats-avg-wait">0s</span>
+                            </div>
+                            <div class="time-stat">
+                                <span class="time-label">Avg Print Time</span>
+                                <span class="time-value" id="stats-avg-print">0s</span>
+                            </div>
+                            <div class="time-stat">
+                                <span class="time-label">Total Pages</span>
+                                <span class="time-value" id="stats-total-pages">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-chart-card">
+                    <h4>Job Status Distribution</h4>
+                    <div class="chart-container">
+                        <div class="status-bars" id="status-bars"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Activity Log -->
+        <section class="page" id="page-logs">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Activity Log</h3>
+                    <div class="log-filters">
+                        <button class="btn btn-sm btn-ghost log-filter active" data-filter="all">All</button>
+                        <button class="btn btn-sm btn-ghost log-filter" data-filter="SUBMIT">Submit</button>
+                        <button class="btn btn-sm btn-ghost log-filter" data-filter="PRINT">Print</button>
+                        <button class="btn btn-sm btn-ghost log-filter" data-filter="COMPLETE">Complete</button>
+                        <button class="btn btn-sm btn-ghost log-filter" data-filter="SYNC">Sync</button>
+                        <button class="btn btn-sm btn-ghost log-filter" data-filter="SYSTEM">System</button>
+                    </div>
+                </div>
+                <div class="card-body log-body">
+                    <div class="log-container" id="log-container">
+                        <div class="empty-state">No activity logs yet. Submit a job to see events.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: About -->
+        <section class="page" id="page-about">
+            <div class="card">
+                <div class="card-header">
+                    <h3>About This Project</h3>
+                </div>
+                <div class="card-body">
+                    <div class="about-content">
+                        <h4>Printer Spooler System - SPOS Mini Project</h4>
+                        <p>This project demonstrates Operating System concepts through a web-based Printer Spooler System. Multiple users/processes submit print jobs to a shared printer, and the system manages scheduling, synchronization, and resource allocation.</p>
+
+                        <h4>SPOS Concepts Demonstrated</h4>
+                        <div class="concept-tags">
+                            <span class="tag">Process Synchronization</span>
+                            <span class="tag">Mutual Exclusion</span>
+                            <span class="tag">Critical Section</span>
+                            <span class="tag">Producer-Consumer</span>
+                            <span class="tag">FIFO Scheduling</span>
+                            <span class="tag">Thread Safety</span>
+                            <span class="tag">Race Condition Prevention</span>
+                            <span class="tag">Shared Resource Management</span>
+                            <span class="tag">Condition Variables</span>
+                            <span class="tag">ReentrantLock</span>
+                        </div>
+
+                        <h4>Technology Stack</h4>
+                        <div class="tech-list">
+                            <div class="tech-item">
+                                <strong>Backend:</strong> Java (built-in HttpServer, ReentrantLock, Condition, ExecutorService)
+                            </div>
+                            <div class="tech-item">
+                                <strong>Frontend:</strong> HTML5 + CSS3 + Vanilla JavaScript
+                            </div>
+                            <div class="tech-item">
+                                <strong>Communication:</strong> REST API with JSON
+                            </div>
+                            <div class="tech-item">
+                                <strong>Data Storage:</strong> In-memory Java collections
+                            </div>
+                        </div>
+
+                        <h4>Architecture</h4>
+                        <pre class="arch-diagram">
+  User (Browser)
+       |
+  HTML/CSS/JavaScript
+       |
+  HTTP REST API (JSON)
+       |
+  Java HttpServer (port 8080)
+       |
+  API Controller
+       |
+  +----+-----+
+  |          |
+  v          v
+Print     Printer
+Queue     Spooler
+Manager      |
+  |          v
+  +----&gt; Shared
+        Printer
+       (Mutual
+       Exclusion)
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Job Detail Modal -->
+        <div class="modal-overlay" id="modal-overlay">
+            <div class="modal" id="job-detail-modal">
+                <div class="modal-header">
+                    <h3>Job Details</h3>
+                    <button class="modal-close" id="modal-close">&times;</button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div class="toast-container" id="toast-container"></div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
